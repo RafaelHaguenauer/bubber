@@ -1,0 +1,29 @@
+{
+  "name": "bubber",
+  "version": "1.0.0",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "apollo-server-express": "3.13.0",
+    "express": "4.21.2",
+    "graphql": "16.11.0",
+    "pg": "8.16.3",
+    "reflect-metadata": "0.2.2",
+    "typeorm": "0.3.27"
+  },
+  "devDependencies": {
+    "@types/express": "4.17.21",
+    "@types/node": "24.6.0",
+    "ts-node": "10.9.2",
+    "ts-node-dev": "2.0.0",
+    "typescript": "5.9.3"
+  },
+  "overrides": {
+    "@types/express": "4.17.21",
+    "@types/express-serve-static-core": "4.19.6"
+  }
+}
