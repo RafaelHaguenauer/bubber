@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Usuario {
+  id       Int        @id @default(autoincrement())
+  nome     String
+  email    String     @unique
+  telefone String
+  corridas Corrida[]
+  pagamentos Pagamento[]
+}
+
+model Motorista {
+  id       Int       @id @default(autoincrement())
+  nome     String
+  cnh      String    @unique
+  telefone String
+  corridas Corrida[]
+}
+
+model Veiculo {
+  id       Int       @id @default(autoincrement())
+  modelo   String
+  placa    String
+  cor      String
+  corridas Corrida[]
+}
+
+model Corrida {
+  id          Int       @id @default(autoincrement())
+  origem      String
+  destino     String
+  valor       Decimal   @db.Decimal
+  status      String
+  motoristaId Int
+  usuarioId   Int
+  veiculoId   Int
+  motorista   Motorista @relation(fields: [motoristaId], references: [id])
+  usuario     Usuario   @relation(fields: [usuarioId], references: [id])
+  veiculo     Veiculo   @relation(fields: [veiculoId], references: [id])
+  pagamento   Pagamento?
+}
+
+model Pagamento {
+  id        Int     @id @default(autoincrement())
+  forma     String
+  valor     Decimal @db.Decimal
+  status    String
+  usuarioId Int
+  corridaId Int     @unique
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+  corrida   Corrida @relation(fields: [corridaId], references: [id])
+}
