@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id        Int     @id @default(autoincrement())
+  nome      String
+  email     String  @unique
+  telefone  String
+  latitude  Float?
+  longitude Float?
+  ativo     Boolean @default(true)
+  
+  corridas   Corrida[]
+  pagamentos Pagamento[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Motorista {
+  id           Int     @id @default(autoincrement())
+  nome         String
+  cnh          String  @unique
+  telefone     String
+  latitude     Float?
+  longitude    Float?
+  disponivel   Boolean @default(true)
+  avaliacao    Float   @default(5.0)
+  veiculoId    Int?
+  
+  corridas    Corrida[]
+  veiculo     Veiculo? @relation(fields: [veiculoId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Veiculo {
+  id          Int        @id @default(autoincrement())
+  modelo      String
+  placa       String     @unique
+  cor         String
+  renavam     String?    @unique
+  
+  motoristas  Motorista[]
+  corridas    Corrida[]
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Corrida {
+  id              Int       @id @default(autoincrement())
+  
+  // Localizações
+  origemLat       Float
+  origemLon       Float
+  destinoLat      Float
+  destinoLon      Float
+  
+  // Informações da corrida
+  valor           Decimal   @db.Decimal(10,2)
+  distancia       Float?    // em km
+  duracao         Int?      // em minutos
+  status          String    @default("pendente") // pendente, confirmada, iniciada, finalizada, cancelada
+  
+  // Relacionamentos
+  motoristaId     Int?
+  usuarioId       Int
+  veiculoId       Int?
+  
+  motorista       Motorista? @relation(fields: [motoristaId], references: [id])
+  usuario         Usuario    @relation(fields: [usuarioId], references: [id])
+  veiculo         Veiculo?   @relation(fields: [veiculoId], references: [id])
+  pagamento       Pagamento?
+  
+  // Dados adicionais
+  dataInicio      DateTime?
+  dataFim         DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+model Pagamento {
+  id        Int       @id @default(autoincrement())
+  forma     String
+  valor     Decimal   @db.Decimal(10,2)
+  status    String    @default("pendente")
+  
+  corridaId Int       @unique
+  corrida   Corrida   @relation(fields: [corridaId], references: [id], onDelete: Cascade)
+  
+  usuarioId Int?
+  usuario   Usuario?  @relation(fields: [usuarioId], references: [id])
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}

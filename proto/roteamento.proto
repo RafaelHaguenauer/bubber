@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package roteamento;
+
+service RoteamentoService {
+  // Calcular rota entre dois pontos
+  rpc CalcularRota(CalcularRotaRequest) returns (CalcularRotaResponse);
+  
+  // Calcular distância entre dois pontos
+  rpc CalcularDistancia(CalcularDistanciaRequest) returns (CalcularDistanciaResponse);
+  
+  // Otimizar rota com múltiplos pontos de parada
+  rpc OtimizarRota(OtimizarRotaRequest) returns (OtimizarRotaResponse);
+}
+
+message CalcularRotaRequest {
+  float origem_lat = 1;
+  float origem_lon = 2;
+  float destino_lat = 3;
+  float destino_lon = 4;
+}
+
+message CalcularRotaResponse {
+  float distancia_metros = 1;
+  int32 duracao_segundos = 2;
+  repeated Passo passos = 3;
+  repeated Coordenada rota = 4;
+}
+
+message CalcularDistanciaRequest {
+  float origem_lat = 1;
+  float origem_lon = 2;
+  float destino_lat = 3;
+  float destino_lon = 4;
+}
+
+message CalcularDistanciaResponse {
+  float distancia_metros = 1;
+  int32 duracao_segundos = 2;
+}
+
+message OtimizarRotaRequest {
+  Coordenada origem = 1;
+  Coordenada destino = 2;
+  repeated Coordenada paradas = 3;
+}
+
+message OtimizarRotaResponse {
+  repeated Coordenada rota_otimizada = 1;
+  float distancia_metros = 2;
+  int32 duracao_segundos = 3;
+}
+
+message Coordenada {
+  float latitude = 1;
+  float longitude = 2;
+  string nome = 3;
+}
+
+message Passo {
+  string instrucao = 1;
+  float distancia_metros = 2;
+  int32 duracao_segundos = 3;
+  string nome_rua = 4;
+}

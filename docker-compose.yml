@@ -1,0 +1,89 @@
+services:
+  # ===== Banco de Dados (usando PostgreSQL local) =====
+
+  # ===== OSRM (OpenStreetMap Routing Machine) =====
+  osrm:
+    image: osrm/osrm-backend:v5.28.0
+    container_name: bubber-osrm
+    volumes:
+      - ./osrm-data:/data
+    ports:
+      - "5000:5000"
+    command: osrm-routed --algorithm=MLD /data/sudeste-latest.osrm
+    environment:
+      - OSRM_DATA_PATH=/data/sudeste-latest.osrm
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - bubber-network
+    profiles:
+      - osrm  # Use: docker-compose --profile osrm up
+
+  # ===== Microsserviço de Motoristas =====
+  service-motoristas:
+    build:
+      context: .
+      dockerfile: ./service-motoristas/Dockerfile
+    container_name: bubber-service-motoristas
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:5432/bubber
+      MOTORISTAS_SERVICE_PORT: 50051
+    ports:
+      - "50051:50051"
+    volumes:
+      - ./proto:/proto:ro
+    networks:
+      - bubber-network
+    restart: unless-stopped
+
+  # ===== Microsserviço de Roteamento =====
+  service-roteamento:
+    build:
+      context: .
+      dockerfile: ./service-roteamento/Dockerfile
+    container_name: bubber-service-roteamento
+    environment:
+      OSRM_URL: http://osrm:5000
+      ROTEAMENTO_SERVICE_PORT: 50052
+    ports:
+      - "50052:50052"
+    depends_on:
+      - osrm
+    volumes:
+      - ./proto:/proto:ro
+    networks:
+      - bubber-network
+    restart: unless-stopped
+    profiles:
+      - osrm
+
+  # ===== API GraphQL =====
+  api-graphql:
+    build:
+      context: .
+      dockerfile: api-graphql/Dockerfile
+    container_name: bubber-api-graphql
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:5432/bubber
+      MOTORISTAS_SERVICE_HOST: service-motoristas
+      MOTORISTAS_SERVICE_PORT: 50051
+      ROTEAMENTO_SERVICE_HOST: service-roteamento
+      ROTEAMENTO_SERVICE_PORT: 50052
+    ports:
+      - "4000:4000"
+    depends_on:
+      - service-motoristas
+    volumes:
+      - ./proto:/proto:ro
+    networks:
+      - bubber-network
+    restart: unless-stopped
+
+networks:
+  bubber-network:
+    driver: bridge

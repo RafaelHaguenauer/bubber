@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package motoristas;
+
+service MotoristaService {
+  // Encontrar motoristas próximos a uma coordenada
+  rpc EncontrarMotoristasProximos(EncontrarMotoristasRequest) returns (EncontrarMotoristasResponse);
+  
+  // Atualizar localização do motorista
+  rpc AtualizarLocalizacao(AtualizarLocalizacaoRequest) returns (AtualizarLocalizacaoResponse);
+  
+  // Obter detalhes de um motorista
+  rpc ObterMotorista(ObterMotoristaRequest) returns (MotoristaDetalhes);
+  
+  // Listar todos os motoristas disponíveis
+  rpc ListarDisponibilizados(ListarDisponibilizadosRequest) returns (ListarDisponibilizadosResponse);
+}
+
+message EncontrarMotoristasRequest {
+  float latitude = 1;
+  float longitude = 2;
+  float raio_km = 3; // Raio de busca em quilômetros
+}
+
+message MotoristaProximo {
+  int32 motorista_id = 1;
+  float latitude = 2;
+  float longitude = 3;
+  float distancia = 4; // em km
+  int32 tempo_minutos = 5; // tempo estimado em minutos
+  float avaliacao = 6;
+  string nome = 7;
+}
+
+message EncontrarMotoristasResponse {
+  repeated MotoristaProximo motoristas = 1;
+}
+
+message AtualizarLocalizacaoRequest {
+  int32 motorista_id = 1;
+  float latitude = 2;
+  float longitude = 3;
+}
+
+message AtualizarLocalizacaoResponse {
+  bool sucesso = 1;
+  string mensagem = 2;
+}
+
+message ObterMotoristaRequest {
+  int32 motorista_id = 1;
+}
+
+message MotoristaDetalhes {
+  int32 id = 1;
+  string nome = 2;
+  string cnh = 3;
+  string telefone = 4;
+  float latitude = 5;
+  float longitude = 6;
+  bool disponivel = 7;
+  float avaliacao = 8;
+}
+
+message ListarDisponibilizadosRequest {
+}
+
+message ListarDisponibilizadosResponse {
+  repeated MotoristaDetalhes motoristas = 1;
+}

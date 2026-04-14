@@ -1,0 +1,190 @@
+type Usuario {
+  id: Int!
+  nome: String!
+  email: String!
+  telefone: String!
+  latitude: Float
+  longitude: Float
+  ativo: Boolean!
+  corridas: [Corrida!]!
+  pagamentos: [Pagamento!]!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Motorista {
+  id: Int!
+  nome: String!
+  cnh: String!
+  telefone: String!
+  latitude: Float
+  longitude: Float
+  disponivel: Boolean!
+  avaliacao: Float!
+  veiculo: Veiculo
+  corridas: [Corrida!]!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Veiculo {
+  id: Int!
+  modelo: String!
+  placa: String!
+  cor: String!
+  renavam: String
+  motoristas: [Motorista!]!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Corrida {
+  id: Int!
+  origemLat: Float!
+  origemLon: Float!
+  destinoLat: Float!
+  destinoLon: Float!
+  valor: Float!
+  distancia: Float
+  duracao: Int
+  status: String!
+  motorista: Motorista
+  usuario: Usuario!
+  veiculo: Veiculo
+  pagamento: Pagamento
+  dataInicio: String
+  dataFim: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Pagamento {
+  id: Int!
+  forma: String!
+  valor: Float!
+  status: String!
+  corrida: Corrida!
+  createdAt: String!
+  updatedAt: String!
+}
+
+# Tipos para Microsserviço de Motoristas
+type MotoristasProximos {
+  motorista: Motorista!
+  distancia: Float!
+  tempo: Int!
+}
+
+# Tipos para Microsserviço de Roteamento
+type RotaInfo {
+  distancia: Float!
+  duracao: Int!
+  distanciaEmKm: Float!
+  duracaoEmMinutos: Int!
+}
+
+type Query {
+  # Queries Usuario
+  usuarios: [Usuario!]!
+  usuario(id: Int!): Usuario
+
+  # Queries Motorista
+  motoristas: [Motorista!]!
+  motorista(id: Int!): Motorista
+  
+  # Buscar motoristas próximos (chama microsserviço)
+  motoristasProximos(latitude: Float!, longitude: Float!, raioKm: Float): [MotoristasProximos!]!
+
+  # Queries Veiculo
+  veiculos: [Veiculo!]!
+  veiculo(id: Int!): Veiculo
+
+  # Queries Corrida
+  corridas: [Corrida!]!
+  corrida(id: Int!): Corrida
+
+  # Queries Pagamento
+  pagamentos: [Pagamento!]!
+  pagamento(id: Int!): Pagamento
+
+  # Calcular rota entre dois pontos (chama microsserviço)
+  calcularRota(
+    origemLat: Float!
+    origemLon: Float!
+    destinoLat: Float!
+    destinoLon: Float!
+  ): RotaInfo!
+}
+
+type Mutation {
+  # Mutations Usuario
+  criarUsuario(nome: String!, email: String!, telefone: String!): Usuario!
+  atualizarUsuario(
+    id: Int!
+    nome: String
+    email: String
+    telefone: String
+  ): Usuario!
+  atualizarLocalizacaoUsuario(
+    id: Int!
+    latitude: Float!
+    longitude: Float!
+  ): Usuario!
+  deletarUsuario(id: Int!): Boolean!
+
+  # Mutations Motorista
+  criarMotorista(nome: String!, cnh: String!, telefone: String!): Motorista!
+  atualizarMotorista(
+    id: Int!
+    nome: String
+    cnh: String
+    telefone: String
+  ): Motorista!
+  atualizarLocalizacaoMotorista(
+    id: Int!
+    latitude: Float!
+    longitude: Float!
+  ): Motorista!
+  atualizarDisponibilidade(id: Int!, disponivel: Boolean!): Motorista!
+  deletarMotorista(id: Int!): Boolean!
+
+  # Mutations Veiculo
+  criarVeiculo(modelo: String!, placa: String!, cor: String!, renavam: String): Veiculo!
+  atualizarVeiculo(
+    id: Int!
+    modelo: String
+    placa: String
+    cor: String
+  ): Veiculo!
+  deletarVeiculo(id: Int!): Boolean!
+
+  # Mutations Corrida
+  criarCorrida(
+    usuarioId: Int!
+    origemLat: Float!
+    origemLon: Float!
+    destinoLat: Float!
+    destinoLon: Float!
+  ): Corrida!
+  
+  selecionarMotoristaParaCorrida(corridaId: Int!, motoristaId: Int!): Corrida!
+  
+  atualizarCorrida(
+    id: Int!
+    status: String
+    valor: Float
+  ): Corrida!
+  deletarCorrida(id: Int!): Boolean!
+
+  # Mutations Pagamento
+  criarPagamento(
+    corridaId: Int!
+    forma: String!
+    valor: Float!
+  ): Pagamento!
+  atualizarPagamento(
+    id: Int!
+    status: String
+  ): Pagamento!
+  deletarPagamento(id: Int!): Boolean!
+}
